@@ -95,7 +95,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "allValue": ".*",
+        "allValue": ".+",
         "definition": "label_values(hubble_policy_verdicts_total{cluster=~\"$cluster\"}, $role)"
       }
     ]
@@ -602,8 +602,8 @@
     {
       "id": 26,
       "type": "stat",
-      "title": "Flows in range",
-      "description": "Flow events Hubble processed for the namespace (as ${role}) in the time range, any verdict. Hubble counts on every node that saw the flow, so a flow that crosses two nodes is counted on both: this number is not comparable to the section 1 verdict tiles (hubble_policy_verdicts_total, counted at the enforcement point).",
+      "title": "Flow events in range",
+      "description": "Hubble flow events processed for the namespace (as ${role}) in the time range, any verdict. Not a unique-flow count: Hubble counts on every node that saw the flow, so a flow that crosses two nodes is counted on both, and this number is not comparable one for one with the section 1 verdict tiles (hubble_policy_verdicts_total, counted at the enforcement point).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -737,7 +737,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -751,7 +751,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1207,7 +1207,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -1221,7 +1221,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1268,7 +1268,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -1282,7 +1282,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1329,7 +1329,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -1343,7 +1343,7 @@
               },
               {
                 "color": "orange",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1735,7 +1735,7 @@
       "id": 35,
       "type": "stat",
       "title": "Missing SYN-ACKs in range",
-      "description": "SYNs that got no SYN-ACK back \u2014 attempts that never completed. Green at zero. Matched by identity and namespace; with `namespace is the destination` it can under-count (see the chart).",
+      "description": "SYNs that got no SYN-ACK back \u2014 attempts that never completed. Green at zero. Counted per sender (a sender with no reply counts in full), then summed.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1752,7 +1752,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "clamp_min(sum(sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range]))) - sum(sum by (destination, destination_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__range])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\")), 0)",
+          "expr": "sum(clamp_min(sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__range])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range]))), 0))",
           "legendFormat": "Missing SYN-ACKs in range",
           "instant": true
         }
@@ -1771,7 +1771,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -1785,7 +1785,7 @@
               },
               {
                 "color": "orange",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1845,7 +1845,7 @@
       "id": 37,
       "type": "stat",
       "title": "Missing echo replies in range",
-      "description": "Pings that got no reply. Green at zero. Matched by identity and namespace; with `namespace is the destination` it can under-count (see the chart).",
+      "description": "Pings that got no reply. Green at zero. Counted per sender (a sender with no reply counts in full), then summed.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1862,7 +1862,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "clamp_min(sum(sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range]))) - sum(sum by (destination, destination_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__range])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\")), 0)",
+          "expr": "sum(clamp_min(sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__range])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range]))), 0))",
           "legendFormat": "Missing echo replies in range",
           "instant": true
         }
@@ -1881,7 +1881,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -1895,7 +1895,7 @@
               },
               {
                 "color": "orange",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -1906,7 +1906,7 @@
       "id": 18,
       "type": "timeseries",
       "title": "TCP: SYNs sent, SYN-ACKs received, and the missing ones",
-      "description": "SYNs the namespace's sources sent (as ${role}) minus the SYN-ACKs that came back to them: a connection attempt that never completes \u2014 a silent drop somewhere, a backend that is not listening, a policy on the far side. Cilium's own query from the Network Overview dashboard; the reply direction is matched by swapping source and destination. Replies are matched by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names). With `namespace is the destination`, the senders are the namespace's CLIENTS, and replies those clients got from OTHER servers count too, so 'missing' can under-count there; the source side is the exact reading.",
+      "description": "SYNs the namespace's sources sent (as ${role}) minus the SYN-ACKs that came back to them: a connection attempt that never completes \u2014 a silent drop somewhere, a backend that is not listening, a policy on the far side. Cilium's own query from the Network Overview dashboard; the reply direction is matched by swapping source and destination. Replies are matched to the sender by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names); a sender with no reply at all counts in full. This is sender-level, not connection-level: with `namespace is the destination` the senders are the namespace's clients and a reply from another server to the same client also counts, so 'missing' can under-count there; the source side is the exact reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1931,7 +1931,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\"))",
+          "expr": "sum(sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) and on (source, source_namespace) sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])))",
           "legendFormat": "SYN-ACK received"
         },
         {
@@ -1939,7 +1939,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])) - sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\"))) > 0",
+          "expr": "clamp_min(sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval]))), 0) > 0",
           "legendFormat": "missing: {{source}} ({{source_namespace}})"
         }
       ],
@@ -2031,7 +2031,7 @@
       "id": 19,
       "type": "timeseries",
       "title": "ICMP: echo requests, replies, and the missing ones",
-      "description": "Echo requests from the namespace (as ${role}) that got no reply. Same shape as the SYN-ACK panel, for pings. Replies are matched by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names). With `namespace is the destination`, the senders are the namespace's CLIENTS, and replies those clients got from OTHER servers count too, so 'missing' can under-count there; the source side is the exact reading.",
+      "description": "Echo requests from the namespace (as ${role}) that got no reply. Same shape as the SYN-ACK panel, for pings. Replies are matched to the sender by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names); a sender with no reply at all counts in full. This is sender-level, not connection-level: with `namespace is the destination` the senders are the namespace's clients and a reply from another server to the same client also counts, so 'missing' can under-count there; the source side is the exact reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2056,7 +2056,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\"))",
+          "expr": "sum(sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) and on (source, source_namespace) sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])))",
           "legendFormat": "echo replies"
         },
         {
@@ -2064,7 +2064,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "(sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])) - sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\"))) > 0",
+          "expr": "clamp_min(sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval]))), 0) > 0",
           "legendFormat": "missing: {{source}} ({{source_namespace}})"
         }
       ],
@@ -2267,7 +2267,7 @@
       "id": 40,
       "type": "stat",
       "title": "Missing answers in range",
-      "description": "Lookups with no answer back. Green at zero.",
+      "description": "Lookups with no answer back. Green at zero. Counted per sender (a sender with no reply counts in full), then summed.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2284,7 +2284,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "clamp_min(sum(increase(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__range])) - sum(increase(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__range])), 0)",
+          "expr": "sum(clamp_min(sum by (source, source_namespace) (increase(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__range])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (increase(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__range])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (increase(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__range]))), 0))",
           "legendFormat": "Missing answers in range",
           "instant": true
         }
@@ -2303,7 +2303,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -2317,7 +2317,7 @@
               },
               {
                 "color": "orange",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -2364,7 +2364,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -2378,7 +2378,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
@@ -2497,7 +2497,7 @@
       "id": 23,
       "type": "timeseries",
       "title": "DNS: queries, answers, and the missing ones",
-      "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic).",
+      "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic). Replies are matched to the sender by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names); a sender with no reply at all counts in full. This is sender-level, not connection-level: with `namespace is the destination` the senders are the namespace's clients and a reply from another server to the same client also counts, so 'missing' can under-count there; the source side is the exact reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2530,8 +2530,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "round(sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination), 0.001) > 0",
-          "legendFormat": "missing: {{source}}"
+          "expr": "round(clamp_min(sum by (source, source_namespace) (rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) - on (source, source_namespace) (sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\")) or on (source, source_namespace) 0 * sum by (source, source_namespace) (rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval]))), 0), 0.001) > 0",
+          "legendFormat": "missing: {{source}} ({{source_namespace}})"
         }
       ],
       "fieldConfig": {
@@ -2827,7 +2827,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
-          "decimals": 0,
+          "decimals": 1,
           "noValue": "0",
           "color": {
             "mode": "thresholds"
@@ -2841,7 +2841,7 @@
               },
               {
                 "color": "red",
-                "value": 1
+                "value": 1e-09
               }
             ]
           }
