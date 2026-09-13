@@ -12,5 +12,5 @@ spec:
   allowCrossNamespaceImport: {{ .Values.grafanaOperator.allowCrossNamespaceImport }}
   folder: {{ .Values.dashboard.folder | quote }}
   json: |-
-{{ .Files.Get "dashboards/hubble-policy-verdicts.json" | indent 4 }}
+{{ include "hubble-policy-verdicts.dashboardJSON" . | indent 4 }}
 {{- end }}

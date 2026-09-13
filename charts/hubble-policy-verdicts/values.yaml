@@ -29,3 +29,11 @@ grafanaOperator:
     matchLabels:
       grafanaInstance: main
   allowCrossNamespaceImport: true
+
+# Verdict → policy in one place (E7): a Loki-backed table of the namespace's DROPPED flows under the verdict
+# panels, its Flow UUID column carrying the cf2cnp actions (Generate, Download) exactly as the Cilium Flows
+# dashboard does. Needs the hubble-observer stream in Loki and cf2cnp reachable from the browser.
+lokiRow:
+  enabled: false
+  cf2cnpURL: https://cf2cnp.example.com        # the base URL the BROWSER reaches cf2cnp at
+  observerNamespace: hubble-observer           # the observer pod's namespace (its Loki stream label)

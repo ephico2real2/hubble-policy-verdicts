@@ -1,0 +1,216 @@
+{
+ "templating": {
+  "list": [
+   {
+    "name": "DS_LOKI",
+    "label": "Loki",
+    "type": "datasource",
+    "query": "loki",
+    "current": {},
+    "hide": 0
+   },
+   {
+    "name": "cf2cnpURL",
+    "label": "cf2cnp URL",
+    "type": "constant",
+    "query": "__CF2CNP_URL__",
+    "hide": 2
+   }
+  ]
+ },
+ "panels": [
+  {
+   "id": 100,
+   "type": "row",
+   "title": "Dropped flows \u2192 policy (Loki, via cf2cnp)",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 32
+   }
+  },
+  {
+   "id": 101,
+   "type": "table",
+   "title": "Dropped flows into $namespace \u2014 click a Flow UUID: Generate, then Download the CiliumNetworkPolicy",
+   "datasource": {
+    "type": "loki",
+    "uid": "${DS_LOKI}"
+   },
+   "gridPos": {
+    "h": 14,
+    "w": 24,
+    "x": 0,
+    "y": 33
+   },
+   "description": "The observer's DROPPED stream from Loki (demo 25). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid.",
+   "targets": [
+    {
+     "datasource": {
+      "type": "loki",
+      "uid": "${DS_LOKI}"
+     },
+     "refId": "A",
+     "editorMode": "code",
+     "direction": "backward",
+     "maxLines": 200,
+     "expr": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"hubble-observer\"} | json | flow_destination_namespace=~\"$namespace\" | flow_verdict=\"DROPPED\" | json Drop_Description=\"flow.drop_reason_desc\", Flow_UUID=\"flow.uuid\", Source=\"flow.source.pod_name\", Source_Namespace=\"flow.source.namespace\", Destination=\"flow.destination.pod_name\", Destination_Namespace=\"flow.destination.namespace\", Dest_Port=\"flow.l4.TCP.destination_port\", Direction=\"flow.traffic_direction\", Verdict=\"flow.verdict\""
+    }
+   ],
+   "transformations": [
+    {
+     "id": "extractFields",
+     "options": {
+      "source": "labels",
+      "replace": false,
+      "keepTime": false
+     }
+    },
+    {
+     "id": "filterFieldsByName",
+     "options": {
+      "include": {
+       "names": [
+        "Time",
+        "Line",
+        "Source",
+        "Source_Namespace",
+        "Destination",
+        "Destination_Namespace",
+        "Dest_Port",
+        "Direction",
+        "Verdict",
+        "Drop_Description",
+        "Flow_UUID"
+       ]
+      }
+     }
+    },
+    {
+     "id": "renameByRegex",
+     "options": {
+      "regex": "(.*)_(.*)",
+      "renamePattern": "$1 $2"
+     }
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Line": false
+      },
+      "indexByName": {
+       "Time": 0,
+       "Source": 1,
+       "Source Namespace": 2,
+       "Direction": 3,
+       "Dest Port": 4,
+       "Destination": 5,
+       "Destination Namespace": 6,
+       "Verdict": 7,
+       "Drop Description": 8,
+       "Flow UUID": 9
+      }
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Line"
+      },
+      "properties": [
+       {
+        "id": "custom.hideFrom.viz",
+        "value": true
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Flow UUID"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 110
+       },
+       {
+        "id": "links",
+        "value": [
+         {
+          "targetBlank": true,
+          "title": "Download CiliumNetworkPolicy (first click \"Generate\u2026\")",
+          "url": "${cf2cnpURL}/download/${__data.fields[\"Flow UUID\"]}"
+         }
+        ]
+       },
+       {
+        "id": "actions",
+        "value": [
+         {
+          "type": "fetch",
+          "title": "Generate CiliumNetworkPolicy from Flow",
+          "style": {
+           "backgroundColor": "#5794F2"
+          },
+          "fetch": {
+           "method": "POST",
+           "url": "${cf2cnpURL}/generate",
+           "headers": [
+            [
+             "Content-Type",
+             "application/json"
+            ]
+           ],
+           "queryParams": [],
+           "body": "${__data.fields.Line}"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Verdict"
+      },
+      "properties": [
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       },
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "DROPPED": {
+            "color": "red",
+            "index": 0
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

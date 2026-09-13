@@ -69,6 +69,7 @@ helm install hubble-policy-verdicts hubble-policy-verdicts/hubble-policy-verdict
 | `sidecar.folderAnnotation` | `grafana_folder` | the annotation naming the folder |
 | `sidecar.namespace` | release namespace | where the ConfigMap goes (set it when the sidecar watches one namespace) |
 | `grafanaOperator.enabled` | `false` | render a `GrafanaDashboard` (grafana.integreatly.org/v1beta1) instead / as well |
+| `lokiRow.enabled`, `lokiRow.cf2cnpURL`, `lokiRow.observerNamespace` | add the Loki-backed dropped-flow table with the cf2cnp actions under the verdict panels (needs the hubble-observer stream in Loki) | `false`, `https://cf2cnp.example.com`, `hubble-observer` |
 | `grafanaOperator.instanceSelector` | `{matchLabels: {grafanaInstance: main}}` | which Grafana the operator applies it to |
 
 As a dependency of another chart (the way [hubble-observer](https://github.com/onzack/hubble-observer) ships the
