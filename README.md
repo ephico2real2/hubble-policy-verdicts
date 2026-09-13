@@ -95,7 +95,7 @@ dependencies:
 | Who talked to whom, and what the policy did | `sum(increase(…[$__range])) by (cluster, source, destination, direction, action, match)` | `match=none` = the default-deny decided; `l3-l4` / `l7/http` / `l7/dns` = the rule kind that allowed |
 | POLICY_DENIED drops per second | `hubble_drop_total{reason="POLICY_DENIED"}` | the drop metric beside the audit line |
 
-Variables: `DS_PROMETHEUS` (datasource), `cluster` and `namespace` (destination namespace) from the metric's labels.
+Variables: `DS_PROMETHEUS` (datasource), `cluster`, `role` (the side the namespace applies to: destination or source) and `namespace`, from the metric's labels.
 
 ### The `namespace is the` variable (0.2.1)
 
