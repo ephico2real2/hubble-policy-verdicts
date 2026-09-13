@@ -11,5 +11,5 @@ metadata:
     {{ .Values.sidecar.folderAnnotation }}: {{ .Values.dashboard.folder | quote }}
 data:
   hubble-policy-verdicts.json: |-
-{{ .Files.Get "dashboards/hubble-policy-verdicts.json" | indent 4 }}
+{{ include "hubble-policy-verdicts.dashboardJSON" . | indent 4 }}
 {{- end }}
