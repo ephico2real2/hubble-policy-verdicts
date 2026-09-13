@@ -1,0 +1,15 @@
+{{- if .Values.sidecar.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hubble-policy-verdicts.name" . }}
+  namespace: {{ .Values.sidecar.namespace | default .Release.Namespace }}
+  labels:
+    {{- include "hubble-policy-verdicts.labels" . | nindent 4 }}
+    {{ .Values.sidecar.label }}: {{ .Values.sidecar.labelValue | quote }}
+  annotations:
+    {{ .Values.sidecar.folderAnnotation }}: {{ .Values.dashboard.folder | quote }}
+data:
+  hubble-policy-verdicts.json: |-
+{{ .Files.Get "dashboards/hubble-policy-verdicts.json" | indent 4 }}
+{{- end }}

@@ -1,0 +1,16 @@
+{{- if .Values.grafanaOperator.enabled }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: {{ include "hubble-policy-verdicts.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "hubble-policy-verdicts.labels" . | nindent 4 }}
+spec:
+  instanceSelector:
+    {{- toYaml .Values.grafanaOperator.instanceSelector | nindent 4 }}
+  allowCrossNamespaceImport: {{ .Values.grafanaOperator.allowCrossNamespaceImport }}
+  folder: {{ .Values.dashboard.folder | quote }}
+  json: |-
+{{ .Files.Get "dashboards/hubble-policy-verdicts.json" | indent 4 }}
+{{- end }}

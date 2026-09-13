@@ -1,0 +1,8 @@
+Hubble / Policy Verdicts (Namespace) — uid hubble-policy-verdicts
+{{- if .Values.sidecar.enabled }}
+ConfigMap {{ include "hubble-policy-verdicts.name" . }} in {{ .Values.sidecar.namespace | default .Release.Namespace }}, label {{ .Values.sidecar.label }}={{ .Values.sidecar.labelValue }}, folder "{{ .Values.dashboard.folder }}" — the Grafana sidecar loads it within its sync interval.
+{{- end }}
+{{- if .Values.grafanaOperator.enabled }}
+GrafanaDashboard {{ include "hubble-policy-verdicts.name" . }} for the Grafana Operator, folder "{{ .Values.dashboard.folder }}".
+{{- end }}
+The panels read hubble_policy_verdicts_total and hubble_drop_total: enable Hubble's `policy` dynamic metric with the source/destination contexts (README).

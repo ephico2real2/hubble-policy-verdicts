@@ -1,0 +1,28 @@
+# hubble-policy-verdicts — one Grafana dashboard, delivered the way your Grafana is fed.
+# Prerequisite: Hubble's `policy` metric with source/destination contexts (see the README for the Cilium values).
+
+dashboard:
+  # Folder the dashboard lands in (the sidecar's folder annotation / the operator's folder)
+  folder: Hubble
+  # Extra labels on the ConfigMap / GrafanaDashboard object
+  labels: {}
+
+# kube-prometheus-stack style: a ConfigMap the Grafana dashboard sidecar picks up
+sidecar:
+  enabled: true
+  # The label the sidecar selects on (kube-prometheus-stack default: grafana_dashboard=1)
+  label: grafana_dashboard
+  labelValue: "1"
+  # The annotation naming the folder (kube-prometheus-stack default: grafana_folder)
+  folderAnnotation: grafana_folder
+  # Namespace for the ConfigMap. Empty = the release namespace. Set it when your sidecar watches one namespace
+  # only (kube-prometheus-stack's sidecar watches ALL namespaces by default).
+  namespace: ""
+
+# Grafana Operator style: a GrafanaDashboard custom resource (grafana.integreatly.org/v1beta1)
+grafanaOperator:
+  enabled: false
+  instanceSelector:
+    matchLabels:
+      grafanaInstance: main
+  allowCrossNamespaceImport: true
