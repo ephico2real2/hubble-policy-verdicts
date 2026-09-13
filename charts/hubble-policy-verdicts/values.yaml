@@ -1,6 +1,9 @@
 # hubble-policy-verdicts — one Grafana dashboard, delivered the way your Grafana is fed.
 # Prerequisite: Hubble's `policy` metric with source/destination contexts (see the README for the Cilium values).
 
+# Name of the ConfigMap / GrafanaDashboard object (default hubble-policy-verdicts; never the chart alias)
+nameOverride: ""
+
 dashboard:
   # Folder the dashboard lands in (the sidecar's folder annotation / the operator's folder)
   folder: Hubble

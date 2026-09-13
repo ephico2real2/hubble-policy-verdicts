@@ -1,0 +1,35 @@
+name: Chart CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  lint-and-render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Lint
+        run: helm lint charts/hubble-policy-verdicts
+      - name: Render, both delivery paths
+        run: |
+          helm template t charts/hubble-policy-verdicts -n monitoring | tee /tmp/sidecar.yaml | grep -q "kind: ConfigMap"
+          helm template t charts/hubble-policy-verdicts --set sidecar.enabled=false --set grafanaOperator.enabled=true | grep -q "kind: GrafanaDashboard"
+      - name: Render as a dependency under a camelCase alias (the hubble-observer shape) and validate every name
+        run: |
+          mkdir -p /tmp/parent/charts && cp -r charts/hubble-policy-verdicts /tmp/parent/charts/
+          cat > /tmp/parent/Chart.yaml <<EOF
+          apiVersion: v2
+          name: parent
+          version: 0.0.1
+          dependencies:
+            - name: hubble-policy-verdicts
+              alias: policyVerdictsDashboard
+              version: "*"
+              condition: policyVerdictsDashboard.enabled
+          EOF
+          echo "policyVerdictsDashboard: {enabled: true}" > /tmp/parent/values.yaml
+          helm template t /tmp/parent -n monitoring > /tmp/aliased.yaml
+          grep "^  name:" /tmp/aliased.yaml
+          ! grep -E "^  name: .*[A-Z]" /tmp/aliased.yaml
+          grep -q "name: hubble-policy-verdicts" /tmp/aliased.yaml

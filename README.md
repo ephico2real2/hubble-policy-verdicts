@@ -61,6 +61,7 @@ helm install hubble-policy-verdicts hubble-policy-verdicts/hubble-policy-verdict
 
 | Value | Default | Meaning |
 |---|---|---|
+| `nameOverride` | `hubble-policy-verdicts` | the object's name (never derived from the chart alias) |
 | `dashboard.folder` | `Hubble` | Grafana folder (the sidecar's folder annotation / the operator's `folder`) |
 | `dashboard.labels` | `{}` | extra labels on the object |
 | `sidecar.enabled` | `true` | render a ConfigMap for the Grafana dashboard sidecar |
@@ -77,7 +78,7 @@ Cilium Flows dashboard):
 dependencies:
   - name: hubble-policy-verdicts
     alias: policyVerdictsDashboard
-    version: "0.1.0"
+    version: "0.1.1"
     repository: https://ephico2real2.github.io/hubble-policy-verdicts
     condition: policyVerdictsDashboard.enabled
 ```
