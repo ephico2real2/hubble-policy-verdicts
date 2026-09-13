@@ -102,6 +102,19 @@
   },
   "panels": [
     {
+      "id": 25,
+      "type": "row",
+      "title": "1 \u00b7 Policy verdicts \u2014 what the policy decided (hubble_policy_verdicts_total)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Audited (policy evaluated, not enforced) \u2014 in range",
@@ -113,7 +126,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -160,7 +173,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -207,7 +220,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -254,7 +267,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -325,7 +338,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 5
+        "y": 6
       },
       "targets": [
         {
@@ -407,7 +420,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 5
+        "y": 6
       },
       "targets": [
         {
@@ -441,7 +454,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "targets": [
         {
@@ -547,7 +560,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 25
       },
       "targets": [
         {
@@ -576,13 +589,13 @@
     {
       "id": 9,
       "type": "row",
-      "title": "Flows \u2014 every verdict Hubble saw (hubble_flows_processed_total)",
+      "title": "2 \u00b7 Flows \u2014 everything Hubble saw, every verdict",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 33
       },
       "panels": []
     },
@@ -597,9 +610,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 33
+        "y": 34
       },
       "targets": [
         {
@@ -618,10 +631,90 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
+            "fillOpacity": 35,
+            "lineWidth": 2,
+            "stacking": {
+              "mode": "normal"
+            }
           }
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "FORWARDED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DROPPED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AUDIT"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "REDIRECTED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -641,7 +734,7 @@
     },
     {
       "id": 11,
-      "type": "bargauge",
+      "type": "table",
       "title": "Top 10 sources (flows per second)",
       "description": "The busiest sources among the namespace's flows (as ${role}), now.",
       "datasource": {
@@ -649,10 +742,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 33
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 42
       },
       "targets": [
         {
@@ -660,41 +753,95 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source))",
+          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source)) > 0",
           "legendFormat": "{{source}}",
-          "instant": true
+          "instant": true,
+          "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
+          "decimals": 2,
+          "min": 0,
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
           }
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flows/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
       },
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "showUnfilled": true,
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "flows/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "flows/s",
+              "source": "source"
+            }
+          }
         },
-        "text": {
-          "titleSize": 14,
-          "valueSize": 16
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "flows/s",
+                "desc": true
+              }
+            ]
+          }
         }
-      }
+      ]
     },
     {
       "id": 12,
-      "type": "bargauge",
+      "type": "table",
       "title": "Top 10 destinations (flows per second)",
       "description": "The busiest destinations among the namespace's flows (as ${role}), now.",
       "datasource": {
@@ -702,10 +849,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 33
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 42
       },
       "targets": [
         {
@@ -713,48 +860,102 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination))",
+          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination)) > 0",
           "legendFormat": "{{destination}}",
-          "instant": true
+          "instant": true,
+          "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
+          "decimals": 2,
+          "min": 0,
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
           }
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flows/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
       },
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "showUnfilled": true,
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "flows/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "flows/s",
+              "destination": "destination"
+            }
+          }
         },
-        "text": {
-          "titleSize": 14,
-          "valueSize": 16
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "flows/s",
+                "desc": true
+              }
+            ]
+          }
         }
-      }
+      ]
     },
     {
       "id": 13,
       "type": "row",
-      "title": "Drops, every reason (hubble_drop_total)",
+      "title": "3 \u00b7 Drops \u2014 every reason, not only policy",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 49
       },
       "panels": []
     },
@@ -769,9 +970,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
-        "y": 42
+        "y": 50
       },
       "targets": [
         {
@@ -787,11 +988,14 @@
         "defaults": {
           "unit": "pps",
           "color": {
-            "mode": "palette-classic"
+            "mode": "palette-classic-by-name"
           },
           "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
+            "fillOpacity": 35,
+            "lineWidth": 2,
+            "stacking": {
+              "mode": "normal"
+            }
           }
         }
       },
@@ -813,7 +1017,7 @@
     },
     {
       "id": 15,
-      "type": "bargauge",
+      "type": "table",
       "title": "Top 10 sources with dropped packets",
       "description": "Who is being dropped the most (any reason), now. The reason is on the timeseries to the left.",
       "datasource": {
@@ -821,10 +1025,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 12,
-        "y": 42
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 58
       },
       "targets": [
         {
@@ -832,41 +1036,95 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source))",
+          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source)) > 0",
           "legendFormat": "{{source}}",
-          "instant": true
+          "instant": true,
+          "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
+          "decimals": 2,
+          "min": 0,
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
           }
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drops/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
       },
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "showUnfilled": true,
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "drops/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "drops/s",
+              "source": "source"
+            }
+          }
         },
-        "text": {
-          "titleSize": 14,
-          "valueSize": 16
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "drops/s",
+                "desc": true
+              }
+            ]
+          }
         }
-      }
+      ]
     },
     {
       "id": 16,
-      "type": "bargauge",
+      "type": "table",
       "title": "Top 10 destinations with dropped packets",
       "description": "Whose traffic is being dropped on the way in (any reason), now. The reason is on the timeseries to the left.",
       "datasource": {
@@ -874,10 +1132,10 @@
         "uid": "${DS_PROMETHEUS}"
       },
       "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 42
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 58
       },
       "targets": [
         {
@@ -885,48 +1143,102 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination))",
+          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination)) > 0",
           "legendFormat": "{{destination}}",
-          "instant": true
+          "instant": true,
+          "format": "table"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
+          "decimals": 2,
+          "min": 0,
           "color": {
-            "mode": "continuous-BlYlRd"
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
           }
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drops/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
       },
       "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "showUnfilled": true,
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "drops/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "drops/s",
+              "destination": "destination"
+            }
+          }
         },
-        "text": {
-          "titleSize": 14,
-          "valueSize": 16
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "drops/s",
+                "desc": true
+              }
+            ]
+          }
         }
-      }
+      ]
     },
     {
       "id": 17,
       "type": "row",
-      "title": "Connection health (hubble_tcp_flags_total, hubble_icmp_total)",
+      "title": "4 \u00b7 Connection health \u2014 attempts that never completed",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 65
       },
       "panels": []
     },
@@ -943,7 +1255,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 51
+        "y": 66
       },
       "targets": [
         {
@@ -959,12 +1271,15 @@
         "defaults": {
           "unit": "pps",
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "orange"
           },
           "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
-          }
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
         }
       },
       "options": {
@@ -996,7 +1311,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 51
+        "y": 66
       },
       "targets": [
         {
@@ -1012,12 +1327,15 @@
         "defaults": {
           "unit": "pps",
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "orange"
           },
           "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
-          }
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
         }
       },
       "options": {
@@ -1039,13 +1357,13 @@
     {
       "id": 20,
       "type": "row",
-      "title": "DNS \u2014 $namespace as the namespace ASKING (hubble_dns_queries_total, hubble_dns_responses_total)",
+      "title": "5 \u00b7 DNS \u2014 $namespace as the namespace asking",
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 74
       },
       "panels": []
     },
@@ -1062,7 +1380,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 60
+        "y": 75
       },
       "targets": [
         {
@@ -1078,113 +1396,8 @@
         "defaults": {
           "unit": "reqps",
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 15,
-            "lineWidth": 2
-          }
-        }
-      },
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "lastNotNull"
-          ],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "id": 22,
-      "type": "bargauge",
-      "title": "Top 10 names asked (queries per minute)",
-      "description": "What the namespace resolves most, now \u2014 the names a toFQDNs rule would have to allow.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 60
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "topk(10, sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])*60) by (query))",
-          "legendFormat": "{{query}}",
-          "instant": true
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "color": {
-            "mode": "continuous-BlYlRd"
-          }
-        }
-      },
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "horizontal",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "showUnfilled": true,
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {
-          "titleSize": 14,
-          "valueSize": 16
-        }
-      }
-    },
-    {
-      "id": 23,
-      "type": "timeseries",
-      "title": "Missing DNS responses (queries minus answers)",
-      "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic).",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 68
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "expr": "round(sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination), 0.001) > 0",
-          "legendFormat": "{{source}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "reqps",
-          "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "purple"
           },
           "custom": {
             "fillOpacity": 15,
@@ -1221,7 +1434,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 68
+        "y": 75
       },
       "targets": [
         {
@@ -1237,12 +1450,14 @@
         "defaults": {
           "unit": "reqps",
           "color": {
-            "mode": "palette-classic"
+            "mode": "fixed",
+            "fixedColor": "red"
           },
           "custom": {
             "fillOpacity": 15,
             "lineWidth": 2
-          }
+          },
+          "noValue": "no errors"
         }
       },
       "options": {
@@ -1260,6 +1475,169 @@
           "sort": "desc"
         }
       }
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Missing DNS responses (queries minus answers)",
+      "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 83
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "round(sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination), 0.001) > 0",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "table",
+      "title": "Top 10 names asked (queries per minute)",
+      "description": "What the namespace resolves most, now \u2014 the names a toFQDNs rule would have to allow.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 90
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])*60) by (query)) > 0",
+          "legendFormat": "{{query}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queries/min"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "queries/min",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "queries/min",
+              "query": "query"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "queries/min",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "description": "Policy verdicts from Hubble's `policy` dynamic metric (hubble_policy_verdicts_total): audit (observe first), forwarded (an allow rule matched), dropped (enforced), per namespace, with the drop metric beside them \u2014 and, since 0.3.0, the namespace's whole traffic around those verdicts: flows by verdict, drops of every reason, missing SYN-ACKs and echo replies, DNS queries, errors and missing answers (the panels of Cilium's Hubble Network Overview and DNS Overview namespace dashboards, on this page's namespace filter). Source: https://github.com/ephico2real2/hubble-policy-verdicts"
