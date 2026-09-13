@@ -600,10 +600,218 @@
       "panels": []
     },
     {
+      "id": 26,
+      "type": "stat",
+      "title": "Flows in range",
+      "description": "Flow events Hubble processed for the namespace (as ${role}) in the time range, any verdict. Hubble counts on every node that saw the flow, so a flow that crosses two nodes is counted on both: this number is not comparable to the section 1 verdict tiles (hubble_policy_verdicts_total, counted at the enforcement point).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 34
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__range]))",
+          "legendFormat": "Flows in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 27,
+      "type": "stat",
+      "title": "Forwarded in range",
+      "description": "Flows with verdict FORWARDED.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 34
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", verdict=\"FORWARDED\"}[$__range]))",
+          "legendFormat": "Forwarded in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      }
+    },
+    {
+      "id": 28,
+      "type": "stat",
+      "title": "Dropped in range",
+      "description": "Flows with verdict DROPPED \u2014 any reason, policy or not (section 3 says which).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 34
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", verdict=\"DROPPED\"}[$__range]))",
+          "legendFormat": "Dropped in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 29,
+      "type": "stat",
+      "title": "Peers seen",
+      "description": "Distinct source \u2192 destination pairs among the namespace's flows in range.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 34
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "count(sum(increase(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__range])) by (source, destination) > 0)",
+          "legendFormat": "Peers seen",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
       "id": 10,
       "type": "timeseries",
       "title": "Flows per second, by verdict",
-      "description": "Every flow Hubble processed for the namespace (as ${role}), by verdict \u2014 FORWARDED, DROPPED, AUDIT, REDIRECTED, ERROR. The verdict panels above count POLICY decisions only; this is the whole traffic they sit in. From Cilium's Hubble / Network Overview (Namespace) dashboard, scoped by the same namespace filter as the rest of this page.",
+      "description": "Every flow Hubble processed for the namespace (as ${role}), by verdict \u2014 FORWARDED, DROPPED, AUDIT, REDIRECTED, ERROR. The verdict panels above count POLICY decisions only; this is the whole traffic they sit in. From Cilium's Hubble / Network Overview (Namespace) dashboard, scoped by the same namespace filter as the rest of this page. Counted on every node that saw the flow (a flow crossing two nodes counts twice).",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -612,7 +820,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 38
       },
       "targets": [
         {
@@ -745,7 +953,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 42
+        "y": 46
       },
       "targets": [
         {
@@ -852,7 +1060,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 42
+        "y": 46
       },
       "targets": [
         {
@@ -955,9 +1163,241 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 49
+        "y": 53
       },
       "panels": []
+    },
+    {
+      "id": 30,
+      "type": "stat",
+      "title": "Drops in range",
+      "description": "Packets dropped for the namespace (as ${role}), every reason.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__range]))",
+          "legendFormat": "Drops in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 31,
+      "type": "stat",
+      "title": "Policy drops in range",
+      "description": "Of those, reason POLICY_DENIED \u2014 the verdicts of section 1, seen by the datapath.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reason=\"POLICY_DENIED\"}[$__range]))",
+          "legendFormat": "Policy drops in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 32,
+      "type": "stat",
+      "title": "Other reasons in range",
+      "description": "Drops that are NOT a policy verdict: unroutable, no service backend, conntrack, \u2026 \u2014 the chart names them.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reason!=\"POLICY_DENIED\"}[$__range]))",
+          "legendFormat": "Other reasons in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 33,
+      "type": "stat",
+      "title": "Reasons seen",
+      "description": "How many distinct drop reasons occurred in range.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 54
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "count(sum(increase(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__range])) by (reason) > 0)",
+          "legendFormat": "Reasons seen",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
     },
     {
       "id": 14,
@@ -972,7 +1412,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 50
+        "y": 58
       },
       "targets": [
         {
@@ -1028,7 +1468,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 58
+        "y": 66
       },
       "targets": [
         {
@@ -1135,7 +1575,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 58
+        "y": 66
       },
       "targets": [
         {
@@ -1238,15 +1678,235 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 73
       },
       "panels": []
     },
     {
+      "id": 34,
+      "type": "stat",
+      "title": "SYNs sent in range",
+      "description": "TCP connection attempts by the namespace's sources (as ${role}).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 74
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range]))",
+          "legendFormat": "SYNs sent in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 35,
+      "type": "stat",
+      "title": "Missing SYN-ACKs in range",
+      "description": "SYNs that got no SYN-ACK back \u2014 attempts that never completed. Green at zero. Matched by identity and namespace; with `namespace is the destination` it can under-count (see the chart).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 74
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "clamp_min(sum(sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range]))) - sum(sum by (destination, destination_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__range])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (increase(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__range])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\")), 0)",
+          "legendFormat": "Missing SYN-ACKs in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 36,
+      "type": "stat",
+      "title": "Echo requests in range",
+      "description": "ICMP echo requests (pings) from the namespace.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 74
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range]))",
+          "legendFormat": "Echo requests in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 37,
+      "type": "stat",
+      "title": "Missing echo replies in range",
+      "description": "Pings that got no reply. Green at zero. Matched by identity and namespace; with `namespace is the destination` it can under-count (see the chart).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 74
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "clamp_min(sum(sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range]))) - sum(sum by (destination, destination_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__range])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (increase(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__range])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\")), 0)",
+          "legendFormat": "Missing echo replies in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "id": 18,
       "type": "timeseries",
-      "title": "Missing TCP SYN-ACKs (SYNs sent minus SYN-ACKs received)",
-      "description": "SYNs the namespace's sources sent (as ${role}) minus the SYN-ACKs that came back to them: a connection attempt that never completes \u2014 a silent drop somewhere, a backend that is not listening, a policy on the far side. Cilium's own query from the Network Overview dashboard; the reply direction is matched by swapping source and destination.",
+      "title": "TCP: SYNs sent, SYN-ACKs received, and the missing ones",
+      "description": "SYNs the namespace's sources sent (as ${role}) minus the SYN-ACKs that came back to them: a connection attempt that never completes \u2014 a silent drop somewhere, a backend that is not listening, a policy on the far side. Cilium's own query from the Network Overview dashboard; the reply direction is matched by swapping source and destination. Replies are matched by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names). With `namespace is the destination`, the senders are the namespace's CLIENTS, and replies those clients got from OTHER servers count too, so 'missing' can under-count there; the source side is the exact reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1255,7 +1915,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 66
+        "y": 78
       },
       "targets": [
         {
@@ -1263,24 +1923,93 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination) > 0",
-          "legendFormat": "{{source}}"
+          "expr": "sum(rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval]))",
+          "legendFormat": "SYN sent"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\"))",
+          "legendFormat": "SYN-ACK received"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "(sum by (source, source_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])) - sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\"))) > 0",
+          "legendFormat": "missing: {{source}} ({{source_namespace}})"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
           "color": {
-            "mode": "fixed",
-            "fixedColor": "orange"
+            "mode": "palette-classic"
           },
           "custom": {
-            "fillOpacity": 80,
-            "lineWidth": 1,
-            "drawStyle": "bars"
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "drawStyle": "line"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "missing:.*"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
           },
-          "noValue": "none missing"
-        }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SYN sent"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SYN-ACK received"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -1301,8 +2030,8 @@
     {
       "id": 19,
       "type": "timeseries",
-      "title": "Missing ICMP echo replies (requests minus replies)",
-      "description": "Echo requests from the namespace (as ${role}) that got no reply. Same shape as the SYN-ACK panel, for pings.",
+      "title": "ICMP: echo requests, replies, and the missing ones",
+      "description": "Echo requests from the namespace (as ${role}) that got no reply. Same shape as the SYN-ACK panel, for pings. Replies are matched by workload identity AND namespace (source and destination are Cilium identities \u2014 app, workload-name, reserved-identity \u2014 not pod names). With `namespace is the destination`, the senders are the namespace's CLIENTS, and replies those clients got from OTHER servers count too, so 'missing' can under-count there; the source side is the exact reading.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -1311,7 +2040,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 66
+        "y": 78
       },
       "targets": [
         {
@@ -1319,24 +2048,93 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "sum(rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination) > 0",
-          "legendFormat": "{{source}}"
+          "expr": "sum(rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval]))",
+          "legendFormat": "echo requests"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])) and on (destination, destination_namespace) label_replace(label_replace(sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])), \"destination\", \"$1\", \"source\", \"(.*)\"), \"destination_namespace\", \"$1\", \"source_namespace\", \"(.*)\"))",
+          "legendFormat": "echo replies"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "(sum by (source, source_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])) - sum by (source, source_namespace) (label_replace(label_replace(sum by (destination, destination_namespace) (rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])), \"source\", \"$1\", \"destination\", \"(.*)\"), \"source_namespace\", \"$1\", \"destination_namespace\", \"(.*)\"))) > 0",
+          "legendFormat": "missing: {{source}} ({{source_namespace}})"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "pps",
           "color": {
-            "mode": "fixed",
-            "fixedColor": "orange"
+            "mode": "palette-classic"
           },
           "custom": {
-            "fillOpacity": 80,
-            "lineWidth": 1,
-            "drawStyle": "bars"
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "drawStyle": "line"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "missing:.*"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
           },
-          "noValue": "none missing"
-        }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "echo requests"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "echo replies"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -1363,9 +2161,229 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 74
+        "y": 86
       },
       "panels": []
+    },
+    {
+      "id": 38,
+      "type": "stat",
+      "title": "Queries in range",
+      "description": "DNS lookups the namespace's workloads sent.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 87
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__range]))",
+          "legendFormat": "Queries in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          }
+        }
+      }
+    },
+    {
+      "id": 39,
+      "type": "stat",
+      "title": "Answered in range",
+      "description": "Answers that came back to them, any rcode.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 87
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__range]))",
+          "legendFormat": "Answered in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          }
+        }
+      }
+    },
+    {
+      "id": 40,
+      "type": "stat",
+      "title": "Missing answers in range",
+      "description": "Lookups with no answer back. Green at zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 87
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "clamp_min(sum(increase(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__range])) - sum(increase(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__range])), 0)",
+          "legendFormat": "Missing answers in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 41,
+      "type": "stat",
+      "title": "Errors in range",
+      "description": "Answers that were not 'No Error' (NXDOMAIN, SERVFAIL, REFUSED). Green at zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 87
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\", rcode!=\"No Error\"}[$__range]))",
+          "legendFormat": "Errors in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "id": 21,
@@ -1380,7 +2398,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 75
+        "y": 91
       },
       "targets": [
         {
@@ -1434,7 +2452,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 75
+        "y": 91
       },
       "targets": [
         {
@@ -1456,8 +2474,7 @@
           "custom": {
             "fillOpacity": 15,
             "lineWidth": 2
-          },
-          "noValue": "no errors"
+          }
         }
       },
       "options": {
@@ -1479,7 +2496,7 @@
     {
       "id": 23,
       "type": "timeseries",
-      "title": "Missing DNS responses (queries minus answers)",
+      "title": "DNS: queries, answers, and the missing ones",
       "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic).",
       "datasource": {
         "type": "prometheus",
@@ -1489,7 +2506,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 83
+        "y": 99
       },
       "targets": [
         {
@@ -1497,24 +2514,93 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
+          "expr": "sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval]))",
+          "legendFormat": "queries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval]))",
+          "legendFormat": "answers"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
           "expr": "round(sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination), 0.001) > 0",
-          "legendFormat": "{{source}}"
+          "legendFormat": "missing: {{source}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
           "color": {
-            "mode": "fixed",
-            "fixedColor": "orange"
+            "mode": "palette-classic"
           },
           "custom": {
-            "fillOpacity": 80,
-            "lineWidth": 1,
-            "drawStyle": "bars"
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "drawStyle": "line"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "missing:.*"
+            },
+            "properties": [
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 80
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
           },
-          "noValue": "none missing"
-        }
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queries"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "answers"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
       },
       "options": {
         "legend": {
@@ -1545,7 +2631,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 90
+        "y": 106
       },
       "targets": [
         {
@@ -1638,6 +2724,609 @@
           }
         }
       ]
+    },
+    {
+      "id": 42,
+      "type": "row",
+      "title": "6 \u00b7 HTTP \u2014 what the proxy saw, request by request",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 113
+      },
+      "panels": []
+    },
+    {
+      "id": 43,
+      "type": "stat",
+      "title": "Requests in range",
+      "description": "HTTP requests to the namespace's workloads (as ${role}), from Hubble's httpV2 metric as the SERVER reported them (the client's copy would double-count). Needs an L7 policy or visibility annotation on the port \u2014 without one Cilium's proxy does not see HTTP.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 114
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_http_requests_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range]))",
+          "legendFormat": "Requests in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 44,
+      "type": "stat",
+      "title": "5xx in range",
+      "description": "Responses with a 5xx status. Green at zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 114
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(increase(hubble_http_requests_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\", status=~\"5..\"}[$__range]))",
+          "legendFormat": "5xx in range",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "noValue": "0",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 45,
+      "type": "stat",
+      "title": "p50 latency",
+      "description": "Median request duration over the range.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 114
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "histogram_quantile(0.5, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le))",
+          "legendFormat": "p50 latency",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          }
+        }
+      }
+    },
+    {
+      "id": 46,
+      "type": "stat",
+      "title": "p99 latency",
+      "description": "99th-percentile request duration over the range.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 114
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le))",
+          "legendFormat": "p99 latency",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "0",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          }
+        }
+      }
+    },
+    {
+      "id": 47,
+      "type": "timeseries",
+      "title": "Requests per second, by status",
+      "description": "Requests per second by HTTP status, server-reported.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 118
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_http_requests_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__rate_interval])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^5.."
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^2.."
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 48,
+      "type": "timeseries",
+      "title": "Request duration p50 / p99, with trace exemplars",
+      "description": "Latency percentiles from the histogram. The dots are exemplars: a request whose trace id Cilium's proxy read from the traceparent header \u2014 click one to open the trace in Tempo (the Prometheus datasource must map exemplar trace ids to a Tempo datasource; kube-prometheus-stack: exemplarTraceIdDestinations).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 118
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "histogram_quantile(0.5, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__rate_interval])) by (le))",
+          "legendFormat": "p50",
+          "exemplar": true
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "histogram_quantile(0.99, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__rate_interval])) by (le))",
+          "legendFormat": "p99",
+          "exemplar": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^5.."
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^2.."
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 49,
+      "type": "table",
+      "title": "Top 10 source \u2192 destination workloads (requests per second)",
+      "description": "Who calls whom over HTTP, now.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 126
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_http_requests_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__rate_interval])) by (source_workload, destination_workload)) > 0",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "req/s"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "req/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "req/s",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "req/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": 50,
+      "type": "table",
+      "title": "Top 10 methods and status (requests per second)",
+      "description": "Method \u00d7 status, now: a 4xx or 5xx column stands out here.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 126
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_http_requests_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__rate_interval])) by (method, status)) > 0",
+          "legendFormat": "",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "req/s"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "req/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "req/s",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "req/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   "description": "Policy verdicts from Hubble's `policy` dynamic metric (hubble_policy_verdicts_total): audit (observe first), forwarded (an allow rule matched), dropped (enforced), per namespace, with the drop metric beside them \u2014 and, since 0.3.0, the namespace's whole traffic around those verdicts: flows by verdict, drops of every reason, missing SYN-ACKs and echo replies, DNS queries, errors and missing answers (the panels of Cilium's Hubble Network Overview and DNS Overview namespace dashboards, on this page's namespace filter). Source: https://github.com/ephico2real2/hubble-policy-verdicts"
