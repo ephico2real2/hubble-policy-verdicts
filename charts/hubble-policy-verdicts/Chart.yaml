@@ -2,7 +2,7 @@ apiVersion: v2
 name: hubble-policy-verdicts
 description: A Grafana dashboard for Cilium network-policy verdicts from Hubble's policy metric — audited, forwarded, dropped — per namespace, provisioned for the Grafana sidecar (ConfigMap) or the Grafana Operator (GrafanaDashboard)
 type: application
-version: 0.2.2
+version: 0.3.0
 appVersion: "1.0"
 keywords: [cilium, hubble, network-policy, grafana, dashboard, observability]
 home: https://github.com/ephico2real2/hubble-policy-verdicts

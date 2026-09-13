@@ -9,7 +9,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "graphTooltip": 1,
   "time": {
@@ -102,6 +102,19 @@
   },
   "panels": [
     {
+      "id": 25,
+      "type": "row",
+      "title": "1 \u00b7 Policy verdicts \u2014 what the policy decided (hubble_policy_verdicts_total)",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Audited (policy evaluated, not enforced) \u2014 in range",
@@ -113,7 +126,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -160,7 +173,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -207,7 +220,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -254,7 +267,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 0
+        "y": 1
       },
       "targets": [
         {
@@ -325,7 +338,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 5
+        "y": 6
       },
       "targets": [
         {
@@ -407,7 +420,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 5
+        "y": 6
       },
       "targets": [
         {
@@ -441,7 +454,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "targets": [
         {
@@ -547,7 +560,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 25
       },
       "targets": [
         {
@@ -572,7 +585,1060 @@
         }
       },
       "description": "Cilium's drop metric beside the verdict metric: the same enforcement seen by the datapath (reason POLICY_DENIED), per source \u2192 destination. The same drops the Network Overview and the Hubble Metrics 'Network Policy' row show \u2014 here beside the audit line, so the before/after of enforcement is one picture."
+    },
+    {
+      "id": 9,
+      "type": "row",
+      "title": "2 \u00b7 Flows \u2014 everything Hubble saw, every verdict",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Flows per second, by verdict",
+      "description": "Every flow Hubble processed for the namespace (as ${role}), by verdict \u2014 FORWARDED, DROPPED, AUDIT, REDIRECTED, ERROR. The verdict panels above count POLICY decisions only; this is the whole traffic they sit in. From Cilium's Hubble / Network Overview (Namespace) dashboard, scoped by the same namespace filter as the rest of this page.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (verdict)",
+          "legendFormat": "{{verdict}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 35,
+            "lineWidth": 2,
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "FORWARDED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DROPPED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "AUDIT"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ERROR"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "purple"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "REDIRECTED"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Top 10 sources (flows per second)",
+      "description": "The busiest sources among the namespace's flows (as ${role}), now.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source)) > 0",
+          "legendFormat": "{{source}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flows/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "flows/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "flows/s",
+              "source": "source"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "flows/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Top 10 destinations (flows per second)",
+      "description": "The busiest destinations among the namespace's flows (as ${role}), now.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_flows_processed_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination)) > 0",
+          "legendFormat": "{{destination}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "flows/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "flows/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "flows/s",
+              "destination": "destination"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "flows/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "row",
+      "title": "3 \u00b7 Drops \u2014 every reason, not only policy",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "panels": []
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "Drops per second, by reason and protocol",
+      "description": "All of Cilium's drop reasons for the namespace (as ${role}), not only POLICY_DENIED: a drop that is not a policy verdict (an unroutable address, a missing service backend, a conntrack miss) shows here and nowhere in the verdict panels. From Cilium's Hubble Metrics 'Network Policy' row and the Network Overview drops, in one panel.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (reason, protocol)",
+          "legendFormat": "{{reason}} ({{protocol}})"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": {
+            "mode": "palette-classic-by-name"
+          },
+          "custom": {
+            "fillOpacity": 35,
+            "lineWidth": 2,
+            "stacking": {
+              "mode": "normal"
+            }
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "type": "table",
+      "title": "Top 10 sources with dropped packets",
+      "description": "Who is being dropped the most (any reason), now. The reason is on the timeseries to the left.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 58
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (source)) > 0",
+          "legendFormat": "{{source}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drops/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "drops/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "drops/s",
+              "source": "source"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "drops/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "type": "table",
+      "title": "Top 10 destinations with dropped packets",
+      "description": "Whose traffic is being dropped on the way in (any reason), now. The reason is on the timeseries to the left.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 58
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_drop_total{cluster=~\"$cluster\", ${role}=~\"$namespace\"}[$__rate_interval])) by (destination)) > 0",
+          "legendFormat": "{{destination}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "drops/s"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "drops/s",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "drops/s",
+              "destination": "destination"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "drops/s",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "type": "row",
+      "title": "4 \u00b7 Connection health \u2014 attempts that never completed",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "panels": []
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "Missing TCP SYN-ACKs (SYNs sent minus SYN-ACKs received)",
+      "description": "SYNs the namespace's sources sent (as ${role}) minus the SYN-ACKs that came back to them: a connection attempt that never completes \u2014 a silent drop somewhere, a backend that is not listening, a policy on the far side. Cilium's own query from the Network Overview dashboard; the reply direction is matched by swapping source and destination.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 66
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_tcp_flags_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", flag=\"SYN\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_tcp_flags_total{cluster=~\"$cluster\", flag=\"SYN-ACK\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination) > 0",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "Missing ICMP echo replies (requests minus replies)",
+      "description": "Echo requests from the namespace (as ${role}) that got no reply. Same shape as the SYN-ACK panel, for pings.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 66
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_icmp_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", type=\"EchoRequest\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_icmp_total{cluster=~\"$cluster\", type=\"EchoReply\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination) > 0",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "type": "row",
+      "title": "5 \u00b7 DNS \u2014 $namespace as the namespace asking",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 74
+      },
+      "panels": []
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "DNS queries per second, by record type",
+      "description": "Lookups the namespace's workloads sent, by qtype. This row does not follow the 'namespace is the' switch: a lookup's destination is always the resolver (kube-system, or openshift-dns), so the namespace here is the source of the query and the destination of the answer. From Cilium's Hubble / DNS Overview (Namespace) dashboard.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 75
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (qtypes)",
+          "legendFormat": "{{qtypes}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "DNS errors, by answer code",
+      "description": "Answers to the namespace that were not 'No Error': NXDOMAIN (a name that does not exist \u2014 a typo, a Service in the wrong namespace), SERVFAIL, REFUSED (a toFQDNs policy's DNS proxy refusing a name outside the rules).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 75
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\", rcode!=\"No Error\"}[$__rate_interval])) by (destination, rcode) > 0",
+          "legendFormat": "{{destination}}: {{rcode}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "custom": {
+            "fillOpacity": 15,
+            "lineWidth": 2
+          },
+          "noValue": "no errors"
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Missing DNS responses (queries minus answers)",
+      "description": "Lookups that got no answer back to the asking pod \u2014 the resolver unreachable, or the answer dropped on the way back (a policy that allows 53 out but not the reply is the classic).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 83
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "round(sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])) by (source) - sum(label_replace(sum(rate(hubble_dns_responses_total{cluster=~\"$cluster\", destination_namespace=~\"$namespace\"}[$__rate_interval])) by (destination), \"source\", \"$1\", \"destination\", \"(.*)\")) without (destination), 0.001) > 0",
+          "legendFormat": "{{source}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "drawStyle": "bars"
+          },
+          "noValue": "none missing"
+        }
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "type": "table",
+      "title": "Top 10 names asked (queries per minute)",
+      "description": "What the namespace resolves most, now \u2014 the names a toFQDNs rule would have to allow.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 90
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "expr": "topk(10, sum(rate(hubble_dns_queries_total{cluster=~\"$cluster\", source_namespace=~\"$namespace\"}[$__rate_interval])*60) by (query)) > 0",
+          "legendFormat": "{{query}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "min": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": false
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queries/min"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 320
+              },
+              {
+                "id": "custom.align",
+                "value": "left"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "queries/min",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "Value": "queries/min",
+              "query": "query"
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "queries/min",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
-  "description": "Policy verdicts from Hubble's `policy` dynamic metric (hubble_policy_verdicts_total): audit (observe first), forwarded (an allow rule matched), dropped (enforced), per namespace, with the drop metric beside them. Source: https://github.com/ephico2real2/hubble-policy-verdicts"
+  "description": "Policy verdicts from Hubble's `policy` dynamic metric (hubble_policy_verdicts_total): audit (observe first), forwarded (an allow rule matched), dropped (enforced), per namespace, with the drop metric beside them \u2014 and, since 0.3.0, the namespace's whole traffic around those verdicts: flows by verdict, drops of every reason, missing SYN-ACKs and echo replies, DNS queries, errors and missing answers (the panels of Cilium's Hubble Network Overview and DNS Overview namespace dashboards, on this page's namespace filter). Source: https://github.com/ephico2real2/hubble-policy-verdicts"
 }
