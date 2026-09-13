@@ -2852,7 +2852,7 @@
       "id": 45,
       "type": "stat",
       "title": "p50 latency",
-      "description": "Median request duration over the range.",
+      "description": "Median request duration over the range. 0 when there were no requests in range.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2869,7 +2869,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.5, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le))",
+          "expr": "(histogram_quantile(0.5, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le)) > 0) or on() vector(0)",
           "legendFormat": "p50 latency",
           "instant": true
         }
@@ -2900,7 +2900,7 @@
       "id": 46,
       "type": "stat",
       "title": "p99 latency",
-      "description": "99th-percentile request duration over the range.",
+      "description": "99th-percentile request duration over the range. 0 when there were no requests in range.",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -2917,7 +2917,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "histogram_quantile(0.99, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le))",
+          "expr": "(histogram_quantile(0.99, sum(rate(hubble_http_request_duration_seconds_bucket{cluster=~\"$cluster\", ${role}=~\"$namespace\", reporter=\"server\"}[$__range])) by (le)) > 0) or on() vector(0)",
           "legendFormat": "p99 latency",
           "instant": true
         }
