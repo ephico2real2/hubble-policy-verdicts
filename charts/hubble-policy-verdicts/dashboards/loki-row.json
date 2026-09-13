@@ -34,7 +34,7 @@
   {
    "id": 101,
    "type": "table",
-   "title": "Dropped flows into $namespace \u2014 click a Flow UUID: Generate, then Download the CiliumNetworkPolicy",
+   "title": "Dropped flows, $namespace as the ${role:text} \u2014 click a Flow UUID: Generate, then Download the CiliumNetworkPolicy",
    "datasource": {
     "type": "loki",
     "uid": "${DS_LOKI}"
@@ -56,7 +56,7 @@
      "editorMode": "code",
      "direction": "backward",
      "maxLines": 200,
-     "expr": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"hubble-observer\"} | json | flow_destination_namespace=~\"$namespace\" | flow_verdict=\"DROPPED\" | json Drop_Description=\"flow.drop_reason_desc\", Flow_UUID=\"flow.uuid\", Source=\"flow.source.pod_name\", Source_Namespace=\"flow.source.namespace\", Destination=\"flow.destination.pod_name\", Destination_Namespace=\"flow.destination.namespace\", Dest_Port=\"flow.l4.TCP.destination_port\", Direction=\"flow.traffic_direction\", Verdict=\"flow.verdict\""
+     "expr": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"hubble-observer\"} | json | flow_${role}=~\"$namespace\" | flow_verdict=\"DROPPED\" | json Drop_Description=\"flow.drop_reason_desc\", Flow_UUID=\"flow.uuid\", Source=\"flow.source.pod_name\", Source_Namespace=\"flow.source.namespace\", Destination=\"flow.destination.pod_name\", Destination_Namespace=\"flow.destination.namespace\", Dest_Port=\"flow.l4.TCP.destination_port\", Direction=\"flow.traffic_direction\", Verdict=\"flow.verdict\""
     }
    ],
    "transformations": [

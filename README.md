@@ -97,6 +97,14 @@ dependencies:
 
 Variables: `DS_PROMETHEUS` (datasource), `cluster` and `namespace` (destination namespace) from the metric's labels.
 
+### The `namespace is the` variable (0.2.1)
+
+`namespace` filters on one side of the verdict: the **destination** (the default — what came into the namespace and
+what the policy did) or the **source** (what the namespace's own workloads tried to reach). An egress drop that
+leaves the namespace, `mesh-lab → bank`, is on the source side only; before 0.2.1 the dashboard showed the
+destination side alone and such a drop was not on the page. Every query, the Loki row included, goes through the
+variable (`${role}=~"$namespace"`), so nothing is counted twice.
+
 ## License
 
 Apache-2.0.
