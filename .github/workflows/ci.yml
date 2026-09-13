@@ -18,7 +18,7 @@ jobs:
       - name: Render with the Loki row, and check the assembled JSON parses with the row and its variable
         run: |
           helm template t charts/hubble-policy-verdicts --set lokiRow.enabled=true --set lokiRow.cf2cnpURL=https://cf2cnp.test | awk '/hubble-policy-verdicts.json: \|-/{f=1;next} f' | sed 's/^    //' > /tmp/with-row.json
-          python3 -c "import json; d=json.load(open('/tmp/with-row.json')); assert any(p.get('type')=='row' and 'Loki' in p.get('title','') for p in d['panels']); assert any(v['name']=='DS_LOKI' for v in d['templating']['list']); assert 'https://cf2cnp.test/generate' in json.dumps(d); print('with row:', len(d['panels']), 'panels')"
+          python3 -c "import json; d=json.load(open('/tmp/with-row.json')); assert any(p.get('type')=='row' and 'Loki' in p.get('title','') for p in d['panels']); assert any(v['name']=='DS_LOKI' for v in d['templating']['list']); assert any(v['name']=='cf2cnpURL' and v['query']=='https://cf2cnp.test' for v in d['templating']['list']); assert '${cf2cnpURL}/generate' in json.dumps(d); print('with row:', len(d['panels']), 'panels')"
           helm template t charts/hubble-policy-verdicts | awk '/hubble-policy-verdicts.json: \|-/{f=1;next} f' | sed 's/^    //' > /tmp/without.json
           python3 -c "import json; d=json.load(open('/tmp/without.json')); assert not any(v['name']=='DS_LOKI' for v in d['templating']['list']); print('without:', len(d['panels']), 'panels')"
       - name: Render as a dependency under a camelCase alias (the hubble-observer shape) and validate every name
