@@ -94,6 +94,17 @@ dependencies:
 | by source → destination and action | `… by (source, destination, direction, action)` | who is affected |
 | Who talked to whom, and what the policy did | `sum(increase(…[$__range])) by (cluster, source, destination, direction, action, match)` | `match=none` = the default-deny decided; `l3-l4` / `l7/http` / `l7/dns` = the rule kind that allowed |
 | POLICY_DENIED drops per second (hubble_drop_total) | `hubble_drop_total{reason="POLICY_DENIED"}` | the drop metric beside the audit line |
+| **Flows** (0.3.0): per second by verdict; top 10 sources; top 10 destinations | `hubble_flows_processed_total` by `verdict` / `source` / `destination` | the whole traffic the verdicts sit in — FORWARDED, DROPPED, AUDIT, REDIRECTED, ERROR |
+| **Drops, every reason** (0.3.0): by reason and protocol; top 10 sources / destinations with drops | `hubble_drop_total` by `reason, protocol` | a drop that is not a policy verdict (unroutable, no backend, conntrack) shows here only |
+| **Connection health** (0.3.0): missing TCP SYN-ACKs; missing ICMP echo replies | `hubble_tcp_flags_total{flag="SYN"}` minus the `SYN-ACK`s back (Cilium's query, source/destination swapped for the reply) | a connection attempt that never completes |
+| **DNS** (0.3.0): queries per second by type; top 10 names asked; missing responses; errors by rcode | `hubble_dns_queries_total`, `hubble_dns_responses_total` — `$namespace` as the **source** of the query and the **destination** of the answer, whatever `namespace is the` says | what the namespace resolves (the names a `toFQDNs` rule must allow), NXDOMAIN / SERVFAIL / REFUSED, lookups with no answer |
+
+The 0.3.0 rows are the panels of Cilium's own *Hubble / Network Overview (Namespace)* and *Hubble / DNS Overview
+(Namespace)* dashboards (the Cilium chart ships them with `hubble.metrics.dashboards.enabled`, tagged `kubecon-demo`),
+re-homed on this page's single namespace filter — one variable, one side (`namespace is the`), the DNS row excepted
+because a lookup's far side is always the resolver. They need the `flow`, `drop`, `tcp`, `icmp` and `dns` dynamic
+metrics with the same source/destination contexts as `policy` (the README's Cilium values); a metric that is not
+enabled leaves its panels empty, nothing else breaks.
 
 Variables: `DS_PROMETHEUS` (datasource), `cluster`, `role` (the side the namespace applies to: destination or source) and `namespace`, from the metric's labels.
 

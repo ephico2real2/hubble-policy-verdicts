@@ -28,7 +28,7 @@
     "h": 1,
     "w": 24,
     "x": 0,
-    "y": 32
+    "y": 76
    }
   },
   {
@@ -43,7 +43,7 @@
     "h": 14,
     "w": 24,
     "x": 0,
-    "y": 33
+    "y": 77
    },
    "description": "The observer's DROPPED stream from Loki (the hubble-observer chart's log, one JSON flow per line). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid.",
    "targets": [
