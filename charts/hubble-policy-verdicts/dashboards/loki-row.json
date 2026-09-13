@@ -99,7 +99,7 @@
      "id": "organize",
      "options": {
       "excludeByName": {
-       "Line": true
+       "Line": false
       },
       "indexByName": {
        "Time": 0,
@@ -123,6 +123,18 @@
      }
     },
     "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Line"
+      },
+      "properties": [
+       {
+        "id": "custom.hideFrom.viz",
+        "value": true
+       }
+      ]
+     },
      {
       "matcher": {
        "id": "byName",
