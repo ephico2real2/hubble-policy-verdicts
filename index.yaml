@@ -1,0 +1,30 @@
+apiVersion: v1
+entries:
+  hubble-policy-verdicts:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2026-09-13T03:36:29.080245508Z"
+    description: A Grafana dashboard for Cilium network-policy verdicts from Hubble's
+      policy metric — audited, forwarded, dropped — per namespace, provisioned for
+      the Grafana sidecar (ConfigMap) or the Grafana Operator (GrafanaDashboard)
+    digest: 670ab7ad1af0912c4c44bb12187f6973ff935330bd6872448cbc3d34e4aab74f
+    home: https://github.com/ephico2real2/hubble-policy-verdicts
+    keywords:
+    - cilium
+    - hubble
+    - network-policy
+    - grafana
+    - dashboard
+    - observability
+    maintainers:
+    - name: ephico2real2
+      url: https://github.com/ephico2real2
+    name: hubble-policy-verdicts
+    sources:
+    - https://github.com/ephico2real2/hubble-policy-verdicts
+    - https://github.com/ephico2real2/cilium-implementation-poc/tree/main/demos/26-cf2cnp-policy-from-flows
+    type: application
+    urls:
+    - https://github.com/ephico2real2/hubble-policy-verdicts/releases/download/hubble-policy-verdicts-0.1.0/hubble-policy-verdicts-0.1.0.tgz
+    version: 0.1.0
+generated: "2026-09-13T03:36:29.080248789Z"
