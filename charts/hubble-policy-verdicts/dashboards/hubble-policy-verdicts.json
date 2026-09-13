@@ -245,7 +245,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Workloads still audited (last 5 min)",
+      "title": "Still audited (last 5 min): source \u2192 destination pairs",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -262,7 +262,7 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "count(sum(rate(hubble_policy_verdicts_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", action=\"audit\"}[5m])) by (destination) > 0)",
+          "expr": "count(sum(rate(hubble_policy_verdicts_total{cluster=~\"$cluster\", ${role}=~\"$namespace\", action=\"audit\"}[5m])) by (source, destination) > 0)",
           "legendFormat": "endpoints",
           "instant": true
         }
@@ -281,7 +281,7 @@
         "defaults": {
           "unit": "short",
           "decimals": 0,
-          "noValue": "0",
+          "noValue": "none",
           "color": {
             "mode": "thresholds"
           },
@@ -297,10 +297,21 @@
                 "value": 1
               }
             ]
-          }
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "none",
+                  "index": 0
+                }
+              }
+            }
+          ]
         }
       },
-      "description": "A destination WORKLOAD (the metric's destination context is app / workload-name, so replicas collapse into one value) that produced audit verdicts in the last 5 minutes has an endpoint in PolicyAuditMode: policy is being evaluated and reported, nothing is blocked yet. The query is INSTANT: a stat over a range series reduces lastNotNull and would show the last value from the audit window (1) long after audit was switched off \u2014 measured on the first capture."
+      "description": "A source \u2192 destination pair that produced audit verdicts in the last 5 minutes has an endpoint in PolicyAuditMode: policy is evaluated and reported, nothing is blocked yet. Green 'none' means every endpoint in view is enforcing (or nothing is selected by a policy at all \u2014 the audit and dropped counters say which). Pairs, not workloads, so the count reads the same whether the namespace is the destination or the source. The query is INSTANT: a stat over a range series reduces lastNotNull and would show the last value from the audit window long after audit was switched off \u2014 measured on the first capture."
     },
     {
       "id": 5,
@@ -527,7 +538,7 @@
     {
       "id": 8,
       "type": "timeseries",
-      "title": "POLICY_DENIED drops per second (hubble_drop_total, the demo 16 metric)",
+      "title": "POLICY_DENIED drops per second (hubble_drop_total)",
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
@@ -560,7 +571,7 @@
           }
         }
       },
-      "description": "The same drops the Network Overview and the Hubble Metrics 'Network Policy' row show \u2014 here beside the audit line, so the before/after of enforcement is one picture."
+      "description": "Cilium's drop metric beside the verdict metric: the same enforcement seen by the datapath (reason POLICY_DENIED), per source \u2192 destination. The same drops the Network Overview and the Hubble Metrics 'Network Policy' row show \u2014 here beside the audit line, so the before/after of enforcement is one picture."
     }
   ],
   "description": "Policy verdicts from Hubble's `policy` dynamic metric (hubble_policy_verdicts_total): audit (observe first), forwarded (an allow rule matched), dropped (enforced), per namespace, with the drop metric beside them. Source: https://github.com/ephico2real2/hubble-policy-verdicts"

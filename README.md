@@ -89,11 +89,11 @@ dependencies:
 | Panel | Query | Reads as |
 |---|---|---|
 | Audited / Forwarded / Dropped in range | `sum(increase(hubble_policy_verdicts_total{action="…"}[$__range]))` | the three phases as three numbers |
-| Workloads still audited (last 5 min) | `count(sum(rate(…{action="audit"}[5m])) by (destination) > 0)` | orange while anything is still observing |
+| Still audited (last 5 min): source → destination pairs | `count(sum(rate(…{action="audit"}[5m])) by (source, destination) > 0)` | orange while anything is still observing; green `none` once everything enforces |
 | Policy verdicts per second, by action | `sum(rate(…[$__rate_interval])) by (action)` | audit rising then vanishing, dropped appearing = enforcement |
 | by source → destination and action | `… by (source, destination, direction, action)` | who is affected |
 | Who talked to whom, and what the policy did | `sum(increase(…[$__range])) by (cluster, source, destination, direction, action, match)` | `match=none` = the default-deny decided; `l3-l4` / `l7/http` / `l7/dns` = the rule kind that allowed |
-| POLICY_DENIED drops per second | `hubble_drop_total{reason="POLICY_DENIED"}` | the drop metric beside the audit line |
+| POLICY_DENIED drops per second (hubble_drop_total) | `hubble_drop_total{reason="POLICY_DENIED"}` | the drop metric beside the audit line |
 
 Variables: `DS_PROMETHEUS` (datasource), `cluster`, `role` (the side the namespace applies to: destination or source) and `namespace`, from the metric's labels.
 

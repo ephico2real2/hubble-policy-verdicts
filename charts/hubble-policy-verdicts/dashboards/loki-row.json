@@ -45,7 +45,7 @@
     "x": 0,
     "y": 33
    },
-   "description": "The observer's DROPPED stream from Loki (demo 25). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid.",
+   "description": "The observer's DROPPED stream from Loki (the hubble-observer chart's log, one JSON flow per line). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid.",
    "targets": [
     {
      "datasource": {
