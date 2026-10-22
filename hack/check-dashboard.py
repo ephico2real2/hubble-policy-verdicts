@@ -6,6 +6,10 @@ JSON Helm renders (with the Loki row and without), and by hand: helm template â€
 """
 import collections, json, sys
 
+# Optional expected values let CI check non-default Helm substitutions too.
+expected_namespace, expected_container, expected_label = (sys.argv[3:] or [
+    "hubble-observer", "hubble-observer", "k8s_cluster_name"])
+
 d = json.load(open(sys.argv[1])); mode = sys.argv[2]
 panels = d['panels']; tv = d['templating']['list']
 def targets(p): return json.dumps(p.get('targets', []))
@@ -16,13 +20,24 @@ if mode == 'with-row':
     assert any(v['name'] == 'cf2cnpURL' and v['query'] == 'https://cf2cnp.test' for v in tv), 'cf2cnpURL from values'
     assert '${cf2cnpURL}/generate' in json.dumps(d), 'the Generate action'
     t = next(p for p in panels if p.get('type') == 'table' and 'Flow UUID' in p.get('title', ''))
+    v = next((v for v in tv if v['name'] == 'loki_cluster'), None); assert v, 'the loki_cluster variable (0.5.0)'
+    assert v['type'] == 'query' and v['datasource'] == {'type': 'loki', 'uid': '${DS_LOKI}'}, 'clusters come from Loki'
+    stream = '{namespace="' + expected_namespace + '",container="' + expected_container + '"}'
+    assert v['query']['type'] == 1 and v['query']['label'] == expected_label and v['query']['stream'] == stream, 'cluster discovery scoped to configured observer streams'
+    assert v['includeAll'] and v['multi'] and v['allValue'] == '.*' and v['current']['value'] == '$__all', 'All includes unlabeled streams by default'
+    assert v['refresh'] == 2, 'refresh cluster options with the time range'
+    expr = t['targets'][0]['expr']
+    assert expr.startswith(stream[:-1] + ',' + expected_label + '=~`${loki_cluster:regex}`} | json |'), 'cluster filter uses the indexed label before JSON parsing, with escaped multi-select regex'
+    assert 'flow_${role}=~"$namespace"' in expr and 'flow_verdict="DROPPED"' in expr, 'preserve role/namespace and verdict filters'
+    assert '$cluster' not in expr, 'Loki cluster selection is independent of Prometheus'
+    assert not any(token in json.dumps(d) for token in ('__OBSERVER_', '__LOKI_CLUSTER_LABEL__', '__CF2CNP_URL__')), 'all chart placeholders resolved'
     org = next(x for x in t['transformations'] if x['id'] == 'organize')
     assert org['options']['excludeByName'].get('Line') is not True, 'Line must stay in the frame for the action body'
     assert any(o['matcher'].get('options') == 'Line' and any(pr['id'] == 'custom.hideFrom.viz' for pr in o['properties']) for o in t['fieldConfig']['overrides']), 'Line hidden from the viz, as dashboard 23862 does'
     rows_sorted = [p['title'].split()[0] for p in sorted((p for p in panels if p['type'] == 'row'), key=lambda p: p['gridPos']['y'])]
     assert rows_sorted == ['1', '2', '3', '4', '5', '6', 'Dropped'], ('the sections in visual order, the Loki row last', rows_sorted)
 else:
-    assert not any(v['name'] == 'DS_LOKI' for v in tv), 'no Loki variable without the row'
+    assert not any(v['name'] in ('DS_LOKI', 'loki_cluster', 'cf2cnpURL') for v in tv), 'no Loki variable without the row'
 
 assert any(v['name'] == 'role' and v['type'] == 'custom' for v in tv), 'the role variable (0.2.1)'
 non_dns = [p for p in panels if 'hubble_dns_' not in targets(p)]

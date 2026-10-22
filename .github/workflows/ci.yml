@@ -13,14 +13,18 @@ jobs:
         run: helm lint charts/hubble-policy-verdicts
       - name: Render, both delivery paths
         run: |
-          helm template t charts/hubble-policy-verdicts -n monitoring | tee /tmp/sidecar.yaml | grep -q "kind: ConfigMap"
-          helm template t charts/hubble-policy-verdicts --set sidecar.enabled=false --set grafanaOperator.enabled=true | grep -q "kind: GrafanaDashboard"
+          helm template t charts/hubble-policy-verdicts -n monitoring > /tmp/sidecar.yaml
+          grep -q "kind: ConfigMap" /tmp/sidecar.yaml
+          helm template t charts/hubble-policy-verdicts --set sidecar.enabled=false --set grafanaOperator.enabled=true > /tmp/operator.yaml
+          grep -q "kind: GrafanaDashboard" /tmp/operator.yaml
       - name: Render with the Loki row, and check the assembled JSON parses with the row and its variable
         run: |
           helm template t charts/hubble-policy-verdicts --set lokiRow.enabled=true --set lokiRow.cf2cnpURL=https://cf2cnp.test | awk '/hubble-policy-verdicts.json: \|-/{f=1;next} f' | sed 's/^    //' > /tmp/with-row.json
           python3 hack/check-dashboard.py /tmp/with-row.json with-row
           helm template t charts/hubble-policy-verdicts | awk '/hubble-policy-verdicts.json: \|-/{f=1;next} f' | sed 's/^    //' > /tmp/without.json
           python3 hack/check-dashboard.py /tmp/without.json without
+      - name: Check configurable Loki stream labels
+        run: bash hack/check-loki-row.sh
       - name: Render as a dependency under a camelCase alias (the hubble-observer shape) and validate every name
         run: |
           mkdir -p /tmp/parent/charts && cp -r charts/hubble-policy-verdicts /tmp/parent/charts/
