@@ -10,6 +10,32 @@
     "hide": 0
    },
    {
+    "name": "loki_cluster",
+    "label": "Loki cluster",
+    "description": "Collector cluster for the Loki row only; independent of the Prometheus cluster. All includes streams without the cluster label.",
+    "type": "query",
+    "datasource": {
+     "type": "loki",
+     "uid": "${DS_LOKI}"
+    },
+    "query": {
+     "type": 1,
+     "label": "__LOKI_CLUSTER_LABEL__",
+     "stream": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"__OBSERVER_CONTAINER__\"}",
+     "refId": "LokiVariableQueryEditor-VariableQuery"
+    },
+    "refresh": 2,
+    "includeAll": true,
+    "multi": true,
+    "current": {
+     "text": "All",
+     "value": "$__all"
+    },
+    "allValue": ".*",
+    "sort": 1,
+    "hide": 0
+   },
+   {
     "name": "cf2cnpURL",
     "label": "cf2cnp URL",
     "type": "constant",
@@ -45,7 +71,7 @@
     "x": 0,
     "y": 134
    },
-   "description": "The observer's DROPPED stream from Loki (the hubble-observer chart's log, one JSON flow per line). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid.",
+   "description": "The observer's DROPPED stream from Loki (the hubble-observer chart's log, one JSON flow per line). The Flow UUID column carries the same actions as the Cilium Flows dashboard: Generate posts this line to cf2cnp; Download fetches the cached policy by the flow's uuid. Loki cluster selects the collector cluster independently of the Prometheus cluster; All also includes streams without a cluster label.",
    "targets": [
     {
      "datasource": {
@@ -56,7 +82,7 @@
      "editorMode": "code",
      "direction": "backward",
      "maxLines": 200,
-     "expr": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"hubble-observer\"} | json | flow_${role}=~\"$namespace\" | flow_verdict=\"DROPPED\" | json Drop_Description=\"flow.drop_reason_desc\", Flow_UUID=\"flow.uuid\", Source=\"flow.source.pod_name\", Source_Namespace=\"flow.source.namespace\", Destination=\"flow.destination.pod_name\", Destination_Namespace=\"flow.destination.namespace\", Dest_Port=\"flow.l4.TCP.destination_port\", Direction=\"flow.traffic_direction\", Verdict=\"flow.verdict\""
+     "expr": "{namespace=\"__OBSERVER_NAMESPACE__\",container=\"__OBSERVER_CONTAINER__\",__LOKI_CLUSTER_LABEL__=~`${loki_cluster:regex}`} | json | flow_${role}=~\"$namespace\" | flow_verdict=\"DROPPED\" | json Drop_Description=\"flow.drop_reason_desc\", Flow_UUID=\"flow.uuid\", Source=\"flow.source.pod_name\", Source_Namespace=\"flow.source.namespace\", Destination=\"flow.destination.pod_name\", Destination_Namespace=\"flow.destination.namespace\", Dest_Port=\"flow.l4.TCP.destination_port\", Direction=\"flow.traffic_direction\", Verdict=\"flow.verdict\""
     }
    ],
    "transformations": [

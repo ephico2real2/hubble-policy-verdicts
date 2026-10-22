@@ -37,3 +37,6 @@ lokiRow:
   enabled: false
   cf2cnpURL: https://cf2cnp.example.com        # the base URL the BROWSER reaches cf2cnp at
   observerNamespace: hubble-observer           # the observer pod's namespace (its Loki stream label)
+  containerName: hubble-observer              # the observer container (its Loki stream label)
+  # Indexed stream label for the collector cluster; All includes streams lacking this label.
+  clusterLabel: k8s_cluster_name

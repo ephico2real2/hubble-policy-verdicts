@@ -69,7 +69,9 @@ helm install hubble-policy-verdicts hubble-policy-verdicts/hubble-policy-verdict
 | `sidecar.folderAnnotation` | `grafana_folder` | the annotation naming the folder |
 | `sidecar.namespace` | release namespace | where the ConfigMap goes (set it when the sidecar watches one namespace) |
 | `grafanaOperator.enabled` | `false` | render a `GrafanaDashboard` (grafana.integreatly.org/v1beta1) instead / as well |
-| `lokiRow.enabled`, `lokiRow.cf2cnpURL`, `lokiRow.observerNamespace` | add the Loki-backed dropped-flow table with the cf2cnp actions under the verdict panels (needs the hubble-observer stream in Loki) | `false`, `https://cf2cnp.example.com`, `hubble-observer` |
+| `lokiRow.enabled`, `lokiRow.cf2cnpURL`, `lokiRow.observerNamespace` | `false`, `https://cf2cnp.example.com`, `hubble-observer` | add the Loki-backed dropped-flow table with the cf2cnp actions under the verdict panels (needs the hubble-observer stream in Loki) |
+| `lokiRow.containerName` | `hubble-observer` | observer container stream label |
+| `lokiRow.clusterLabel` | `k8s_cluster_name` | indexed Loki stream label holding the collector cluster |
 | `grafanaOperator.instanceSelector` | `{matchLabels: {grafanaInstance: main}}` | which Grafana the operator applies it to |
 
 As a dependency of another chart (the way [hubble-observer](https://github.com/onzack/hubble-observer) ships the
@@ -107,6 +109,25 @@ metrics with the same source/destination contexts as `policy` (the README's Cili
 enabled leaves its panels empty, nothing else breaks.
 
 Variables: `DS_PROMETHEUS` (datasource), `cluster`, `role` (the side the namespace applies to: destination or source) and `namespace`, from the metric's labels.
+
+### Loki cluster selection (0.5.0)
+
+Enable `lokiRow.enabled` to add the **Loki cluster** selector, populated from
+`lokiRow.clusterLabel` on the configured observer namespace/container streams in `DS_LOKI`.
+Set `lokiRow.containerName` when the observer container is named differently.
+The default cluster label is `k8s_cluster_name` (the Loki label for the collector's
+`k8s.cluster.name` resource attribute); this is the collection cluster, not a flow's source or destination cluster.
+
+This selector is independent of the Prometheus `cluster` variable: log collectors and metric
+scrapers may use different cluster names or cover different clusters. To compare a single
+cluster across both sources, select the corresponding cluster in each selector. The existing
+namespace and role selectors still apply to both sources.
+
+**All** is the default and uses `.*`, including streams where the label is absent. Leave it
+on All for older collectors without cluster labels. Selecting one or more clusters excludes
+unlabeled streams, since their cluster cannot be determined. A custom label must be a non-empty
+Loki label identifier; it must be indexed on the stream, not just present in the JSON log body
+or structured metadata. The cluster matcher runs in the stream selector before JSON parsing.
 
 ### The `namespace is the` variable (0.2.1)
 
